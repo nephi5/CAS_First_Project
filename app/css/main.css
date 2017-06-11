@@ -1,3 +1,17 @@
 body {
     padding: 20px;
+    font-size: 14px;
+}
+
+h1 {
+    font-size: 24px;
+}
+
+.top-buttons {
+    display: flex;
+    justify-content: space-between;
+}
+
+.top-buttons a {
+    margin-left: 0;
 }
