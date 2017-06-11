@@ -8,7 +8,7 @@
     margin-left: 2.5rem;
     transition: all 0.3s ease;
     border: 0.125rem solid transparent;
-    background-color: #98878b;
+    background-color: #b0a3a7;
     outline: none;
 }
 .btn:hover {
@@ -16,6 +16,10 @@
     box-shadow: 2px 4px 8px 0px rgba(46,61,73,0.2);
 }
 
+.btn-primary {
+    background-color: #02b3e4;
+}
+
 .btn-active {
-    background-color: #ff2052;
+    background-color: #ff5483;
 }
