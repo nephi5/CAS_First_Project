@@ -1,4 +1,8 @@
 .filter-panel {
     display: flex;
+    justify-content: space-between;
+}
 
+.filter-panel .first-button-group .btn:first-child {
+    margin-left: 0;
 }

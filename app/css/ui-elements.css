@@ -8,13 +8,14 @@
     margin-left: 2.5rem;
     transition: all 0.3s ease;
     border: 0.125rem solid transparent;
+    background-color: #98878b;
+    outline: none;
 }
 .btn:hover {
-    background-color: #02b3e4;
     transition: all 0.3s ease;
     box-shadow: 2px 4px 8px 0px rgba(46,61,73,0.2);
 }
 
 .btn-active {
-    background-color: #02b3e4;
+    background-color: #ff2052;
 }
