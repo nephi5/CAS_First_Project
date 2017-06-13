@@ -1,17 +1,22 @@
-import { default as ReminderService } from './../model/reminders.model';
+import { default as ReminderStorageService } from './../reminder-storage.service';
 
-let tempRemindersArr = [];
-let tempReminder = ReminderService.createReminder ('Become very successful', 3, '08/08/2018');
-tempRemindersArr.push(tempReminder);
+class ReminderOverviewController {
+    constructor() {
+        this.overviewEl = $('.reminders-overview');
+        this.reminders = ReminderStorageService.getReminders();
+        this.template = Handlebars.templates['reminder-list'];
+        this.renderUI();
+    }
 
-if (!localStorage.getItem('reminders')) {
-    localStorage.setItem('reminders', JSON.stringify(tempRemindersArr));
-    // Are we going to cooperate
+    renderUI() {
+        this.overviewEl.append(this.template({reminders: this.reminders}));
+    }
 }
-var overviewEl = $('.reminders-overview');
 
+function initReminderController() {
+    return new ReminderOverviewController();
+}
 
-let template = Handlebars.templates['reminder-list'];
-overviewEl.append(template(tempReminder));
+export default initReminderController;
 
 

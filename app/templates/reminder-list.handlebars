@@ -1,8 +1,9 @@
-<div>
+{{#each reminders}}
+<div style="margin-bottom: 15px;">
     id: {{id}}</br>
-    reminder: {{reminder}} <br>
-    priority: {{priority}} <br>
+    title: {{title}}<br>
+    reminder: {{notes}} <br>
+    priority: {{priority}} {{#displayPriority priority}}{{/displayPriority}}<br>
     due date: {{dueDate}} <br>
-
-
 </div>
+{{/each}}

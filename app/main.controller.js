@@ -1,13 +1,13 @@
 class MainController {
     constructor() {
-        this.initListener();
+        this.registerListener();
     }
 
     switchStyles(style) {
         console.log(`Switching styles to: ${style}`);
     }
 
-    initListener() {
+    registerListener() {
         $('.top-buttons select').on('change', (event) => {
             this.switchStyles(event.target.value);
         });
