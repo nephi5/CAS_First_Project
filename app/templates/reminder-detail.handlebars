@@ -1,0 +1,41 @@
+<div class="reminder-detail">
+    <div class="row">
+        <div class="first-column">
+            Title
+        </div>
+        <div class="second-column">
+            <input type="text" class="input-title">
+        </div>
+    </div>
+    <div class="row">
+        <div class="first-column">
+            Note
+        </div>
+        <div class="second-column">
+            <textarea class="input-note" rows="10"></textarea>
+        </div>
+    </div>
+    <div class="row">
+        <div class="first-column">
+            Importance
+        </div>
+        <div class="second-column priority-symbol-container">
+
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="first-column">
+            Due Date
+        </div>
+        <div class="second-column">
+            <input type="date" class="input-date">
+        </div>
+    </div>
+    <div class="row">
+        <div class="second-column buttons">
+            <button class="btn btn-primary" onclick="window.RDCtrl.saveChanges()">Save</button>
+            <button class="btn" onclick="window.RDCtrl.cancelChanges()">Cancel</button>
+        </div>
+    </div>
+</div>

@@ -30,5 +30,11 @@
 }
 
 .priority-symbol {
+    color: #98878b;
+    font-size: 30px;
+    cursor: pointer;
+}
 
+.priority-symbol.active, .priority-symbol.perm {
+    color: #ff5483;
 }

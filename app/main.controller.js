@@ -1,3 +1,7 @@
+import {default as initReminderDetailCtrl} from './reminder-detail/reminder-detail.controller';
+import {default as initROCtrl} from './reminder-overview/reminder-overview.controller'
+import {default as initFPCtrl} from './reminder-overview/filter-panel.controller';
+
 class MainController {
     constructor() {
         this.registerListener();
@@ -19,7 +23,21 @@ class MainController {
     renderReminderOverviewView() {
         let mainViewEl = $('.main-view');
         let template = Handlebars.templates['reminder-overview-view'];
+        mainViewEl.empty();
         mainViewEl.append(template);
+        window.ROCtrl = initROCtrl();
+        window.FPCtrl = initFPCtrl();
+    }
+
+    renderReminderDetailView() {
+        $('.main-view').empty();
+        window.RDCtrl = initReminderDetailCtrl('create');
+
+    }
+
+    renderReminderDetailViewById(id) {
+        $('.main-view').empty();
+        window.RDCtrl = initReminderDetailCtrl('edit', id);
     }
 }
 

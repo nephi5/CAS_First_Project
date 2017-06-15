@@ -1,13 +1,6 @@
 (function () {
 'use strict';
 
-/*
- GetNotes(orderBy, filterBy)
- AddNote(note)
- UpdateNote(note)
- GetNoteById(id)
- * */
-
 class RemindersStorageService {
     constructor() {
         let temp = JSON.parse(localStorage.getItem('reminders'));
@@ -45,14 +38,17 @@ class RemindersStorageService {
                 return b.priority - a.priority;
             });
         }
-        console.log('reminderstorage: ', this.reminders);
         return this.reminders;
     }
 
-    addReminder(title, notes, priority, dueDate) {
-        let reminder = new Reminder(title, notes, priority, dueDate);
-        this.reminders.push(reminder);
-        localStorage.setItem('reminders', JSON.stringify(this.reminders));
+    addReminder(reminder) {
+        let tempReminders = JSON.parse(localStorage.reminders);
+        tempReminders.push(reminder);
+        localStorage.setItem('reminders', JSON.stringify(tempReminders));
+    }
+
+    createReminder() {
+        return new Reminder();
     }
 
     updateReminder(reminder) {
@@ -81,12 +77,12 @@ class RemindersStorageService {
 
 
 class Reminder {
-    constructor(title, notes, priority, dueDate) {
+    constructor() {
         this.id = this.generateUUID();
-        this.title = title;
-        this.notes = notes;
-        this.priority = priority;
-        this.dueDate = new Date(dueDate);
+        this.title = '';
+        this.notes = '';
+        this.priority = 0;
+        this.dueDate = null;
         this.createdOn = new Date();
         this.finished = false;
         this.finishDate = 0;
@@ -105,10 +101,100 @@ class Reminder {
 
 const ReminderStorageServiceClass = new RemindersStorageService();
 
+class ReminderDetailController {
+    constructor(option, id) {
+        this.option = option;
+        this.id = id ? id : null;
+        this.mainView = $('.main-view');
+        this.template = Handlebars.templates['reminder-detail'];
+
+        if (this.option === 'create') {
+            this.reminder = ReminderStorageServiceClass.createReminder();
+        } else {
+            this.reminder = ReminderStorageServiceClass.getReminderById(this.id);
+        }
+
+        this.renderUI();
+        this.createPrioritySymbols();
+        this.passValue();
+        this.registerListeners();
+    }
+
+    saveChanges() {
+        if (this.option === 'create') {
+            ReminderStorageServiceClass.addReminder(this.reminder);
+            window.MCtrl.renderReminderOverviewView();
+        } else {
+            ReminderStorageServiceClass.updateReminder(this.reminder);
+            window.MCtrl.renderReminderOverviewView();
+        }
+    }
+
+    cancelChanges() {
+        window.MCtrl.renderReminderOverviewView();
+    }
+
+    renderUI() {
+        this.mainView.append(this.template({reminder: this.reminder}));
+    }
+
+    registerListeners() {
+        $('.reminder-detail .input-title').on('keyup', (event) => {
+            this.reminder.title = event.target.value;
+        });
+
+        $('.reminder-detail .input-note').on('keyup', (event) => {
+            this.reminder.notes = event.target.value;
+        });
+
+        $('.reminder-detail .input-date').on('change', (event) => {
+            this.reminder.dueDate = new Date(event.target.value);
+        });
+    }
+
+    passValue() {
+        $('.reminder-detail .input-title')[0].value = this.reminder.title;
+        $('.reminder-detail .input-note')[0].value = this.reminder.notes;
+        $('.reminder-detail .input-date').value = this.reminder.dueDate === null ? '': moment(this.reminder.dueDate).format('YYYY-MM-DD');
+    }
+
+    createPrioritySymbols() {
+
+        let ratingContainerEl = $('.reminder-detail .priority-symbol-container');
+        for (let x = 0; x < 5; x++) {
+            ratingContainerEl.append($(`<span class="priority-symbol" star-num="${x}">&#9733</span>`));
+        }
+
+        function addClassToStars (num, className) {
+            for (let x = 0; x <= num; x++) {
+                $(`[star-num="${x}"]`).addClass(className);
+            }
+        }
+
+        $('.priority-symbol').on('mouseover', function () {
+            let starNum = $(this).attr('star-num');
+            addClassToStars(starNum, 'active');
+        });
+
+        $('.priority-symbol-container').on('click', (event) => {
+            $('.priority-symbol').removeClass('perm');
+            let starNum = event.target.attributes[1].value;
+            this.reminder.priority = (parseInt(starNum) + 1);
+            addClassToStars(starNum, 'perm');
+        });
+
+        $('.priority-symbol').on('mouseleave', function () {
+            $('.priority-symbol').removeClass('active');
+        });
+    }
+}
+
+function initReminderDetailController(option, id) {
+    return new ReminderDetailController(option, id);
+}
+
 class ReminderOverviewController {
     constructor() {
-        // ReminderStorageService.addReminder('Hello World', 'This is my note', 3, '08-02-2017');
-        // ReminderStorageService.addReminder('Another Title', 'Some more notetaking here', 4, '06-19-2017');
         this.overviewEl = $('.reminder-list');
         this.reminders = ReminderStorageServiceClass.getReminders();
         this.template = {};
@@ -118,7 +204,6 @@ class ReminderOverviewController {
     renderUI() {
         this.template = Handlebars.templates['reminder-list'];
         this.overviewEl.empty();
-        console.log(this.reminders);
         this.overviewEl.append(this.template({reminders: this.reminders}));
         this.registerListener();
     }
@@ -131,6 +216,11 @@ class ReminderOverviewController {
             this.reminders = ReminderStorageServiceClass.getReminders();
             this.renderUI();
         });
+
+        $('.list-container .btn-edit').on('click', (event) => {
+            let id = $($(event.target)[0].attributes[0])[0].value;
+            window.MCtrl.renderReminderDetailViewById(id);
+        });
     }
 
     filterBy() {
@@ -139,7 +229,7 @@ class ReminderOverviewController {
     }
 }
 
-function initReminderController$1() {
+function initReminderController() {
     return new ReminderOverviewController();
 }
 
@@ -149,23 +239,19 @@ class FilterPanelController {
         sessionStorage.orderBy = sessionStorage.orderBy ? sessionStorage.orderBy: null;
         sessionStorage.filterBy = sessionStorage.filterBy ? sessionStorage.filterBy: true;
 
-        if (!JSON.parse(sessionStorage.filterBy)) {
-            $('.finished-filter .btn').addClass('btn-active');
-        }
-
-        $(`.filter-panel .btn[filter-option="${sessionStorage.orderBy}"]`).addClass('btn-active');
-
     }
 
     renderUI() {
         let template = Handlebars.templates['filter-panel'];
         $('.filter-panel').append(template);
+        if (!JSON.parse(sessionStorage.filterBy)) {
+            $('.finished-filter .btn').addClass('btn-active');
+        }
+        $(`.filter-panel .btn[filter-option="${sessionStorage.orderBy}"]`).addClass('btn-active');
     }
 
     toggleFinished() {
         sessionStorage.filterBy = !JSON.parse(sessionStorage.filterBy);
-        console.log('sessionStorage.filterBy');
-        console.log(sessionStorage.filterBy);
         $('.finished-filter .btn').toggleClass('btn-active');
         window.ROCtrl.filterBy();
     }
@@ -180,7 +266,7 @@ class FilterPanelController {
     }
 }
 
-function initFilterPanelController$1() {
+function initFilterPanelController() {
     return new FilterPanelController();
 }
 
@@ -205,7 +291,21 @@ class MainController {
     renderReminderOverviewView() {
         let mainViewEl = $('.main-view');
         let template = Handlebars.templates['reminder-overview-view'];
+        mainViewEl.empty();
         mainViewEl.append(template);
+        window.ROCtrl = initReminderController();
+        window.FPCtrl = initFilterPanelController();
+    }
+
+    renderReminderDetailView() {
+        $('.main-view').empty();
+        window.RDCtrl = initReminderDetailController('create');
+
+    }
+
+    renderReminderDetailViewById(id) {
+        $('.main-view').empty();
+        window.RDCtrl = initReminderDetailController('edit', id);
     }
 }
 
@@ -218,7 +318,5 @@ if (!sessionStorage.currentView) {
 }
 
 window.MCtrl = initMainController$1();
-window.FPCtrl = initFilterPanelController$1();
-window.ROCtrl = initReminderController$1();
 
 }());

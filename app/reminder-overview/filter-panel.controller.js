@@ -5,23 +5,19 @@ class FilterPanelController {
         sessionStorage.orderBy = sessionStorage.orderBy ? sessionStorage.orderBy: null;
         sessionStorage.filterBy = sessionStorage.filterBy ? sessionStorage.filterBy: true;
 
-        if (!JSON.parse(sessionStorage.filterBy)) {
-            $('.finished-filter .btn').addClass('btn-active');
-        }
-
-        $(`.filter-panel .btn[filter-option="${sessionStorage.orderBy}"]`).addClass('btn-active');
-
     }
 
     renderUI() {
         let template = Handlebars.templates['filter-panel'];
         $('.filter-panel').append(template);
+        if (!JSON.parse(sessionStorage.filterBy)) {
+            $('.finished-filter .btn').addClass('btn-active');
+        }
+        $(`.filter-panel .btn[filter-option="${sessionStorage.orderBy}"]`).addClass('btn-active');
     }
 
     toggleFinished() {
         sessionStorage.filterBy = !JSON.parse(sessionStorage.filterBy);
-        console.log('sessionStorage.filterBy');
-        console.log(sessionStorage.filterBy);
         $('.finished-filter .btn').toggleClass('btn-active');
         window.ROCtrl.filterBy();
     }

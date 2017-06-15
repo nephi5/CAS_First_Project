@@ -1,10 +1,3 @@
-/*
- GetNotes(orderBy, filterBy)
- AddNote(note)
- UpdateNote(note)
- GetNoteById(id)
- * */
-
 class RemindersStorageService {
     constructor() {
         let temp = JSON.parse(localStorage.getItem('reminders'));
@@ -42,14 +35,17 @@ class RemindersStorageService {
                 return b.priority - a.priority;
             })
         }
-        console.log('reminderstorage: ', this.reminders);
         return this.reminders;
     }
 
-    addReminder(title, notes, priority, dueDate) {
-        let reminder = new Reminder(title, notes, priority, dueDate);
-        this.reminders.push(reminder);
-        localStorage.setItem('reminders', JSON.stringify(this.reminders));
+    addReminder(reminder) {
+        let tempReminders = JSON.parse(localStorage.reminders);
+        tempReminders.push(reminder);
+        localStorage.setItem('reminders', JSON.stringify(tempReminders));
+    }
+
+    createReminder() {
+        return new Reminder();
     }
 
     updateReminder(reminder) {
@@ -78,12 +74,12 @@ class RemindersStorageService {
 
 
 class Reminder {
-    constructor(title, notes, priority, dueDate) {
+    constructor() {
         this.id = this.generateUUID();
-        this.title = title;
-        this.notes = notes;
-        this.priority = priority;
-        this.dueDate = new Date(dueDate);
+        this.title = '';
+        this.notes = '';
+        this.priority = 0;
+        this.dueDate = null;
         this.createdOn = new Date();
         this.finished = false;
         this.finishDate = 0;

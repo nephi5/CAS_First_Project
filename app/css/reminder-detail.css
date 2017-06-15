@@ -1,0 +1,26 @@
+.reminder-detail {
+
+}
+
+.reminder-detail .row {
+    display: grid;
+    grid-template-columns: 1fr 3fr;
+    grid-template-rows: auto;
+    margin-bottom: 15px;
+}
+
+.reminder-detail .first-column {
+    grid-column: 1 / 2;
+}
+
+.reminder-detail .second-column {
+    grid-column: 2 / 3;
+}
+
+.reminder-detail .input-title, .reminder-detail .input-note {
+    width: 100%;
+}
+
+.reminder-detail .second-column.buttons {
+    justify-self: end;
+}
