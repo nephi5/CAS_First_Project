@@ -6,3 +6,12 @@ Handlebars.registerHelper('displayPriority', function (numOfStars) {
     }
     return html;
 });
+
+Handlebars.registerHelper ("formatDate", function(datetime) {
+    if (moment) {
+        return moment(datetime).fromNow();
+    }
+    else {
+        return datetime;
+    }
+});

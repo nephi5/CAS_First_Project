@@ -10,10 +10,42 @@
 
 class RemindersStorageService {
     constructor() {
-        this.reminders = JSON.parse(localStorage.getItem('reminders'));
+        let temp = JSON.parse(localStorage.getItem('reminders'));
+        this.reminders = temp ? temp : [];
     }
 
-    getReminders(orderBy, filterBy) {
+    getReminders() {
+        let orderBy = sessionStorage.orderBy;
+        let filterByFinished = JSON.parse(sessionStorage.filterBy);
+        let temp = JSON.parse(localStorage.getItem('reminders'));
+        this.reminders = temp ? temp : [];
+        if (this.reminders.length === 0) {
+            return this.reminders;
+        }
+
+        if (filterByFinished) {
+            this.reminders = this.reminders.filter((item) => !item.finished);
+        }
+
+        if (orderBy === 'finishDate') {
+            this.reminders = this.reminders.sort((a, b) => {
+                if (!NaN(a.finishDate))
+                return a.finishDate - b.finishDate;
+            });
+        }
+
+        if (orderBy === 'createdDate') {
+            this.reminders = this.reminders.sort((a, b) => {
+                return a.createdOn - b.createdOn;
+            });
+        }
+
+        if (orderBy === 'importance') {
+            this.reminders = this.reminders.sort((a, b) => {
+                return b.priority - a.priority;
+            });
+        }
+        console.log('reminderstorage: ', this.reminders);
         return this.reminders;
     }
 
@@ -24,11 +56,26 @@ class RemindersStorageService {
     }
 
     updateReminder(reminder) {
+        let listToBeUpdated = JSON.parse(localStorage.getItem('reminders'));
+        for (let x = 0; x < listToBeUpdated.length; x++) {
+            if (listToBeUpdated[x].id === reminder.id) {
+                listToBeUpdated[x] = reminder;
+            }
+        }
+        localStorage.setItem('reminders', JSON.stringify(listToBeUpdated));
+    }
 
+    updateFinishStatus(bool, id) {
+        let reminder = this.getReminderById(id);
+        reminder.finished = bool;
+        reminder.finishDate = bool ? new Date(): 0;
+        this.updateReminder(reminder);
     }
 
     getReminderById(id) {
-
+        return this.reminders.filter((item) => {
+            return item.id === id;
+        })[0]
     }
 }
 
@@ -42,6 +89,7 @@ class Reminder {
         this.dueDate = new Date(dueDate);
         this.createdOn = new Date();
         this.finished = false;
+        this.finishDate = 0;
     }
 
     generateUUID() {
@@ -55,24 +103,39 @@ class Reminder {
     }
 }
 
-function initializeRemindersStorageService$1 () {
-    return new RemindersStorageService();
-}
-
-let ReminderStorageService = initializeRemindersStorageService$1();
+const ReminderStorageServiceClass = new RemindersStorageService();
 
 class ReminderOverviewController {
     constructor() {
-        ReminderStorageService.addReminder('Success', 'Become very successful', 3, '01-08-2018');
-        ReminderStorageService.addReminder('Success', 'Become very successful', 1, '08-08-2018');
-        this.overviewEl = $('.reminders-overview');
-        this.reminders = ReminderStorageService.getReminders();
-        this.template = Handlebars.templates['reminder-list'];
+        // ReminderStorageService.addReminder('Hello World', 'This is my note', 3, '08-02-2017');
+        // ReminderStorageService.addReminder('Another Title', 'Some more notetaking here', 4, '06-19-2017');
+        this.overviewEl = $('.reminder-list');
+        this.reminders = ReminderStorageServiceClass.getReminders();
+        this.template = {};
         this.renderUI();
     }
 
     renderUI() {
+        this.template = Handlebars.templates['reminder-list'];
+        this.overviewEl.empty();
+        console.log(this.reminders);
         this.overviewEl.append(this.template({reminders: this.reminders}));
+        this.registerListener();
+    }
+
+    registerListener() {
+        $('input[type="checkbox"]').on('click', (event) => {
+            let bool = $(event.target).is(':checked');
+            let id = $($(event.target)[0].attributes[0])[0].value;
+            ReminderStorageServiceClass.updateFinishStatus(bool, id);
+            this.reminders = ReminderStorageServiceClass.getReminders();
+            this.renderUI();
+        });
+    }
+
+    filterBy() {
+        this.reminders = ReminderStorageServiceClass.getReminders();
+        this.renderUI();
     }
 }
 
@@ -83,7 +146,15 @@ function initReminderController$1() {
 class FilterPanelController {
     constructor() {
         this.renderUI();
-        this.sortedBy = '';
+        sessionStorage.orderBy = sessionStorage.orderBy ? sessionStorage.orderBy: null;
+        sessionStorage.filterBy = sessionStorage.filterBy ? sessionStorage.filterBy: true;
+
+        if (!JSON.parse(sessionStorage.filterBy)) {
+            $('.finished-filter .btn').addClass('btn-active');
+        }
+
+        $(`.filter-panel .btn[filter-option="${sessionStorage.orderBy}"]`).addClass('btn-active');
+
     }
 
     renderUI() {
@@ -92,15 +163,19 @@ class FilterPanelController {
     }
 
     toggleFinished() {
+        sessionStorage.filterBy = !JSON.parse(sessionStorage.filterBy);
+        console.log('sessionStorage.filterBy');
+        console.log(sessionStorage.filterBy);
         $('.finished-filter .btn').toggleClass('btn-active');
+        window.ROCtrl.filterBy();
     }
 
-    setFilterBy(filterBy) {
-        if (this.sortedBy !== filterBy) {
-            this.sortedBy = filterBy;
+    setFilterBy(orderBy) {
+        if (sessionStorage.orderBy !== orderBy) {
+            sessionStorage.orderBy = orderBy;
             $('.filter-panel .first-button-group .btn').removeClass('btn-active');
-            $(`.filter-panel .btn[filter-option="${filterBy}"]`).addClass('btn-active');
-            console.log(`filtering by: ${filterBy}`);
+            $(`.filter-panel .btn[filter-option="${orderBy}"]`).addClass('btn-active');
+            window.ROCtrl.filterBy();
         }
     }
 }
@@ -112,6 +187,9 @@ function initFilterPanelController$1() {
 class MainController {
     constructor() {
         this.registerListener();
+        if (sessionStorage.currentView === 'overview') {
+            this.renderReminderOverviewView();
+        }
     }
 
     switchStyles(style) {
@@ -123,14 +201,24 @@ class MainController {
             this.switchStyles(event.target.value);
         });
     }
+
+    renderReminderOverviewView() {
+        let mainViewEl = $('.main-view');
+        let template = Handlebars.templates['reminder-overview-view'];
+        mainViewEl.append(template);
+    }
 }
 
 function initMainController$1 () {
     return new MainController();
 }
 
-window.FPCtrl = initFilterPanelController$1();
+if (!sessionStorage.currentView) {
+    sessionStorage.setItem('currentView', 'overview');
+}
+
 window.MCtrl = initMainController$1();
+window.FPCtrl = initFilterPanelController$1();
 window.ROCtrl = initReminderController$1();
 
 }());

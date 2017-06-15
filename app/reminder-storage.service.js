@@ -7,10 +7,42 @@
 
 class RemindersStorageService {
     constructor() {
-        this.reminders = JSON.parse(localStorage.getItem('reminders'));
+        let temp = JSON.parse(localStorage.getItem('reminders'));
+        this.reminders = temp ? temp : [];
     }
 
-    getReminders(orderBy, filterBy) {
+    getReminders() {
+        let orderBy = sessionStorage.orderBy;
+        let filterByFinished = JSON.parse(sessionStorage.filterBy);
+        let temp = JSON.parse(localStorage.getItem('reminders'));
+        this.reminders = temp ? temp : [];
+        if (this.reminders.length === 0) {
+            return this.reminders;
+        }
+
+        if (filterByFinished) {
+            this.reminders = this.reminders.filter((item) => !item.finished)
+        }
+
+        if (orderBy === 'finishDate') {
+            this.reminders = this.reminders.sort((a, b) => {
+                if (!NaN(a.finishDate))
+                return a.finishDate - b.finishDate;
+            })
+        }
+
+        if (orderBy === 'createdDate') {
+            this.reminders = this.reminders.sort((a, b) => {
+                return a.createdOn - b.createdOn;
+            })
+        }
+
+        if (orderBy === 'importance') {
+            this.reminders = this.reminders.sort((a, b) => {
+                return b.priority - a.priority;
+            })
+        }
+        console.log('reminderstorage: ', this.reminders);
         return this.reminders;
     }
 
@@ -21,11 +53,26 @@ class RemindersStorageService {
     }
 
     updateReminder(reminder) {
+        let listToBeUpdated = JSON.parse(localStorage.getItem('reminders'));
+        for (let x = 0; x < listToBeUpdated.length; x++) {
+            if (listToBeUpdated[x].id === reminder.id) {
+                listToBeUpdated[x] = reminder;
+            }
+        }
+        localStorage.setItem('reminders', JSON.stringify(listToBeUpdated));
+    }
 
+    updateFinishStatus(bool, id) {
+        let reminder = this.getReminderById(id);
+        reminder.finished = bool;
+        reminder.finishDate = bool ? new Date(): 0;
+        this.updateReminder(reminder);
     }
 
     getReminderById(id) {
-
+        return this.reminders.filter((item) => {
+            return item.id === id;
+        })[0]
     }
 }
 
@@ -39,6 +86,7 @@ class Reminder {
         this.dueDate = new Date(dueDate);
         this.createdOn = new Date();
         this.finished = false;
+        this.finishDate = 0;
     }
 
     generateUUID() {

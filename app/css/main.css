@@ -15,3 +15,8 @@ h1 {
 .top-buttons a {
     margin-left: 0;
 }
+
+.main-view {
+    margin: auto;
+    max-width: 900px;
+}
