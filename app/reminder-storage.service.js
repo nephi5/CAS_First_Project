@@ -19,14 +19,23 @@ class RemindersStorageService {
 
         if (orderBy === 'finishDate') {
             this.reminders = this.reminders.sort((a, b) => {
-                if (!NaN(a.finishDate))
-                return a.finishDate - b.finishDate;
+                if (a.dueDate === null) {
+                    return 1;
+                }
+
+                if (b.dueDate === null) {
+                    return -1;
+                }
+
+                return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
             })
         }
 
         if (orderBy === 'createdDate') {
             this.reminders = this.reminders.sort((a, b) => {
-                return a.createdOn - b.createdOn;
+                let aDate = new Date(a.createdOn).getTime();
+                let bDate = new Date(b.createdOn).getTime();
+                return bDate - aDate;
             })
         }
 

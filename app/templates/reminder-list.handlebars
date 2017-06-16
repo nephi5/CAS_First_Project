@@ -2,12 +2,16 @@
     {{#each reminders}}
         <div class="container">
             <div class="first-column">
-                {{formatDate dueDate}}
+                {{#if dueDate}}
+                    {{formatDate dueDate}}
+                {{else}}
+                    Someday
+                {{/if}}
             </div>
             <div class="second-column">
                 <div class="title-symbol-container">
                     <div class="title">
-                        {{title}} Created on: {{formatDate createdOn}}
+                        {{title}}
                     </div>
                     <div class="priority-symbol-container">
                         {{#displayPriority priority}}{{/displayPriority}}

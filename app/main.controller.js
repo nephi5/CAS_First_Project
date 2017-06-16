@@ -11,6 +11,7 @@ class MainController {
     }
 
     switchStyles(style) {
+        // TODO implement style change!
         console.log(`Switching styles to: ${style}`);
     }
 

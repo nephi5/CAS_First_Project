@@ -52,40 +52,43 @@ class ReminderDetailController {
     }
 
     passValue() {
+        let dueDate = this.reminder.dueDate === null ? '': moment(this.reminder.dueDate).format('YYYY-MM-DD');
         $('.reminder-detail .input-title')[0].value = this.reminder.title;
         $('.reminder-detail .input-note')[0].value = this.reminder.notes;
-        $('.reminder-detail .input-date').value = this.reminder.dueDate === null ? '': moment(this.reminder.dueDate).format('YYYY-MM-DD');
+        $('.reminder-detail .input-date').val(dueDate);
+        this.addClassToStars(this.reminder.priority - 1, 'active');
     }
 
     createPrioritySymbols() {
-
+        let classThis = this;
         let ratingContainerEl = $('.reminder-detail .priority-symbol-container');
         for (let x = 0; x < 5; x++) {
             ratingContainerEl.append($(`<span class="priority-symbol" star-num="${x}">&#9733</span>`));
         }
 
-        function addClassToStars (num, className) {
-            for (let x = 0; x <= num; x++) {
-                $(`[star-num="${x}"]`).addClass(className);
-            }
-        }
-
         $('.priority-symbol').on('mouseover', function () {
             let starNum = $(this).attr('star-num');
-            addClassToStars(starNum, 'active');
-        })
+            classThis.addClassToStars(starNum, 'active');
+        });
 
         $('.priority-symbol-container').on('click', (event) => {
             $('.priority-symbol').removeClass('perm');
             let starNum = event.target.attributes[1].value;
             this.reminder.priority = (parseInt(starNum) + 1);
-            addClassToStars(starNum, 'perm');
-        })
+            thisaddClassToStars(starNum, 'perm');
+        });
 
         $('.priority-symbol').on('mouseleave', function () {
             $('.priority-symbol').removeClass('active');
         })
     }
+
+    addClassToStars (num, className) {
+        for (let x = 0; x <= num; x++) {
+            $(`[star-num="${x}"]`).addClass(className);
+        }
+    }
+
 }
 
 function initReminderDetailController(option, id) {
