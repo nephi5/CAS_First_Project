@@ -2,9 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 
 const app = express();
-app.use(express.static(__dirname + '/vendor'));
-app.use(express.static(__dirname + '/dist'));
-app.use(express.static(__dirname + '/app'));
+app.use(express.static(__dirname + '/src'));
 
 app.use(bodyParser.json());
 
