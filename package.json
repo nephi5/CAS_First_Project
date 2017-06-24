@@ -9,14 +9,17 @@
     "moment": "^2.18.1",
     "rollup": "^0.42.0",
     "rollup-watch": "^4.0.0",
-    "serve-static": "^1.9.2"
+    "serve-static": "^1.9.2",
+    "body-parser": "^1.12.4",
+    "express": "^4.12.4",
+    "nedb": "^1.1.2"
   },
   "devDependencies": {
     "nodemon": "^1.11.0"
   },
   "scripts": {
-    "compileJs": "rollup --input app/main.js --format iife --output dist/bundle.js",
-    "build-hb": "handlebars -m app/templates/> dist/templates.js",
-    "watch": "nodemon -e handlebars,js --ignore dist/ -x \"npm run compileJs | npm run build-hb\""
+    "compileJs": "rollup --input src/app/main.js --format iife --output src/dist/bundle.js",
+    "build-hb": "handlebars -m src/app/templates/> src/dist/templates.js",
+    "watch": "nodemon -e handlebars,js --ignore src/dist/ -x \"npm run compileJs | npm run build-hb\""
   }
 }
