@@ -166,7 +166,7 @@ class ReminderDetailController {
         $('.reminder-detail .input-title')[0].value = this.reminder.title;
         $('.reminder-detail .input-note')[0].value = this.reminder.notes;
         $('.reminder-detail .input-date').val(dueDate);
-        this.addClassToStars(this.reminder.priority - 1, 'active');
+        this.addClassToStars(this.reminder.priority - 1, 'perm');
     }
 
     createPrioritySymbols() {
@@ -185,7 +185,7 @@ class ReminderDetailController {
             $('.priority-symbol').removeClass('perm');
             let starNum = event.target.attributes[1].value;
             this.reminder.priority = (parseInt(starNum) + 1);
-            thisaddClassToStars(starNum, 'perm');
+            this.addClassToStars(starNum, 'perm');
         });
 
         $('.priority-symbol').on('mouseleave', function () {
