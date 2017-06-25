@@ -48,8 +48,6 @@ class ReminderStorageUtil {
     }
 
     createReminder(reminder) {
-        console.log('reminder-storage-util reminder:');
-        console.log(reminder);
         return fetch('/reminders', {
             method: 'post',
             headers: {
@@ -228,11 +226,8 @@ class ReminderOverviewController {
     }
 
     renderUI() {
-        console.log('rendering the UI: ');
         this.template = Handlebars.templates['reminder-list'];
         this.overviewEl.empty();
-        console.log('passing in reminders:');
-        console.log(this.reminders);
         this.overviewEl.append(this.template({reminders: this.reminders}));
         this.registerListener();
     }

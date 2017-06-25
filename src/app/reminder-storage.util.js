@@ -45,8 +45,6 @@ class ReminderStorageUtil {
     }
 
     createReminder(reminder) {
-        console.log('reminder-storage-util reminder:');
-        console.log(reminder);
         return fetch('/reminders', {
             method: 'post',
             headers: {

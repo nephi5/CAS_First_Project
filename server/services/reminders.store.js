@@ -37,7 +37,6 @@ function getById(id, callback) {
 
 function addReminder(reminder, callback) {
     reminder.dueDateByNum = new Date(reminder.dueDate).getTime();
-    console.log(new Date().getTime());
     db.insert(reminder, function (err, newDoc) {
         if(callback) {
             callback(err, newDoc);
