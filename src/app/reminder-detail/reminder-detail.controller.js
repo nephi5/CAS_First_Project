@@ -1,4 +1,5 @@
 import {default as ReminderStorageService} from './../reminder-storage.service';
+import {default as ReminderStorageUtil} from './../reminder-storage.util';
 
 class ReminderDetailController {
     constructor(option, id) {
@@ -9,20 +10,23 @@ class ReminderDetailController {
 
         if (this.option === 'create') {
             this.reminder = ReminderStorageService.createReminder();
+            this.renderUI();
         } else {
-            this.reminder = ReminderStorageService.getReminderById(this.id);
+            this.reminder = ReminderStorageUtil
+                .getById(id)
+                .then((response) => {
+                    this.reminder = response;
+                    this.renderUI();
+                });
         }
-
-        this.renderUI();
-        this.createPrioritySymbols();
-        this.passValue();
-        this.registerListeners();
     }
 
     saveChanges() {
         if (this.option === 'create') {
-            ReminderStorageService.addReminder(this.reminder);
-            window.MCtrl.renderReminderOverviewView();
+            ReminderStorageService.addReminder(this.reminder).then(function () {
+                window.MCtrl.renderReminderOverviewView();
+            });
+
         } else {
             ReminderStorageService.updateReminder(this.reminder);
             window.MCtrl.renderReminderOverviewView();
@@ -35,6 +39,9 @@ class ReminderDetailController {
 
     renderUI() {
         this.mainView.append(this.template({reminder: this.reminder}));
+        this.createPrioritySymbols();
+        this.passValue();
+        this.registerListeners();
     }
 
     registerListeners() {

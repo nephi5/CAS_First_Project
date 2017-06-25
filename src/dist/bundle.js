@@ -1,6 +1,69 @@
 (function () {
 'use strict';
 
+class ReminderStorageUtil {
+    constructor() {
+        this.createQueryString();
+    }
+
+    createQueryString() {
+        let orderBy = sessionStorage.orderBy;
+        let filterBy;
+        try {
+            JSON.parse(sessionStorage.filterBy);
+        } catch (e) {
+            sessionStorage.filterBy = true;
+        }
+
+        filterBy = sessionStorage.filterBy;
+
+        let queryString = `?filterBy=${filterBy}`;
+        if (orderBy !== 'null') {
+            queryString += `&orderBy=${orderBy}`;
+        }
+
+        return queryString;
+    }
+
+    updateReminder(reminder) {
+        return fetch(`/reminders/${reminder._id}`, {
+            method: 'put',
+            headers: {
+                "Content-type": "application/json"
+            },
+            body: JSON.stringify(reminder)
+        })
+    }
+
+    getById(id) {
+        return fetch(`/reminders/${id}`).then(function (response) {
+            return response.json();
+        })
+    }
+
+    getAll() {
+        return fetch(`/reminders${this.createQueryString()}`).then(function (response) {
+            return response.json();
+        })
+    }
+
+    createReminder(reminder) {
+        console.log('reminder-storage-util reminder:');
+        console.log(reminder);
+        return fetch('/reminders', {
+            method: 'post',
+            headers: {
+              "Content-type": "application/json"
+            },
+            body: JSON.stringify(reminder)
+        }).then(function (response) {
+            return response.json();
+        });
+    }
+}
+
+var ReminderStorageUtil$1 = new ReminderStorageUtil();
+
 class RemindersStorageService {
     constructor() {
         let temp = JSON.parse(localStorage.getItem('reminders'));
@@ -8,52 +71,12 @@ class RemindersStorageService {
     }
 
     getReminders() {
-        let orderBy = sessionStorage.orderBy;
-        let filterByFinished = JSON.parse(sessionStorage.filterBy);
-        let temp = JSON.parse(localStorage.getItem('reminders'));
-        this.reminders = temp ? temp : [];
-        if (this.reminders.length === 0) {
-            return this.reminders;
-        }
-
-        if (filterByFinished) {
-            this.reminders = this.reminders.filter((item) => !item.finished);
-        }
-
-        if (orderBy === 'finishDate') {
-            this.reminders = this.reminders.sort((a, b) => {
-                if (a.dueDate === null) {
-                    return 1;
-                }
-
-                if (b.dueDate === null) {
-                    return -1;
-                }
-
-                return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
-            });
-        }
-
-        if (orderBy === 'createdDate') {
-            this.reminders = this.reminders.sort((a, b) => {
-                let aDate = new Date(a.createdOn).getTime();
-                let bDate = new Date(b.createdOn).getTime();
-                return bDate - aDate;
-            });
-        }
-
-        if (orderBy === 'importance') {
-            this.reminders = this.reminders.sort((a, b) => {
-                return b.priority - a.priority;
-            });
-        }
-        return this.reminders;
+        return ReminderStorageUtil$1
+            .getAll()
     }
 
     addReminder(reminder) {
-        let tempReminders = JSON.parse(localStorage.reminders);
-        tempReminders.push(reminder);
-        localStorage.setItem('reminders', JSON.stringify(tempReminders));
+        return ReminderStorageUtil$1.createReminder(reminder);
     }
 
     createReminder() {
@@ -61,50 +84,31 @@ class RemindersStorageService {
     }
 
     updateReminder(reminder) {
-        let listToBeUpdated = JSON.parse(localStorage.getItem('reminders'));
-        for (let x = 0; x < listToBeUpdated.length; x++) {
-            if (listToBeUpdated[x].id === reminder.id) {
-                listToBeUpdated[x] = reminder;
-            }
-        }
-        localStorage.setItem('reminders', JSON.stringify(listToBeUpdated));
+        return ReminderStorageUtil$1.updateReminder(reminder);
     }
 
-    updateFinishStatus(bool, id) {
-        let reminder = this.getReminderById(id);
+    updateFinishStatus(bool, id, reminders) {
+        let reminder = this.getReminderById(reminders, id);
         reminder.finished = bool;
         reminder.finishDate = bool ? new Date(): 0;
-        this.updateReminder(reminder);
+        return this.updateReminder(reminder);
     }
 
-    getReminderById(id) {
-        return this.reminders.filter((item) => {
-            return item.id === id;
-        })[0]
+    getReminderById(reminders, id) {
+        return reminders.filter(item => item._id === id)[0];
     }
 }
 
 
 class Reminder {
     constructor() {
-        this.id = this.generateUUID();
         this.title = '';
         this.notes = '';
         this.priority = 0;
         this.dueDate = null;
-        this.createdOn = new Date();
+        this.createdOn = new Date().getTime();
         this.finished = false;
         this.finishDate = 0;
-    }
-
-    generateUUID() {
-        function s4() {
-            return Math.floor((1 + Math.random()) * 0x10000)
-                .toString(16)
-                .substring(1);
-        }
-
-        return `${s4()}${s4()}-${s4()}-${s4()}-${s4()}-${s4()}${s4()}${s4()}`;
     }
 }
 
@@ -119,20 +123,23 @@ class ReminderDetailController {
 
         if (this.option === 'create') {
             this.reminder = ReminderStorageServiceClass.createReminder();
+            this.renderUI();
         } else {
-            this.reminder = ReminderStorageServiceClass.getReminderById(this.id);
+            this.reminder = ReminderStorageUtil$1
+                .getById(id)
+                .then((response) => {
+                    this.reminder = response;
+                    this.renderUI();
+                });
         }
-
-        this.renderUI();
-        this.createPrioritySymbols();
-        this.passValue();
-        this.registerListeners();
     }
 
     saveChanges() {
         if (this.option === 'create') {
-            ReminderStorageServiceClass.addReminder(this.reminder);
-            window.MCtrl.renderReminderOverviewView();
+            ReminderStorageServiceClass.addReminder(this.reminder).then(function () {
+                window.MCtrl.renderReminderOverviewView();
+            });
+
         } else {
             ReminderStorageServiceClass.updateReminder(this.reminder);
             window.MCtrl.renderReminderOverviewView();
@@ -145,6 +152,9 @@ class ReminderDetailController {
 
     renderUI() {
         this.mainView.append(this.template({reminder: this.reminder}));
+        this.createPrioritySymbols();
+        this.passValue();
+        this.registerListeners();
     }
 
     registerListeners() {
@@ -208,14 +218,21 @@ function initReminderDetailController(option, id) {
 class ReminderOverviewController {
     constructor() {
         this.overviewEl = $('.reminder-list');
-        this.reminders = ReminderStorageServiceClass.getReminders();
-        this.template = {};
-        this.renderUI();
+        ReminderStorageServiceClass
+            .getReminders()
+            .then((response) => {
+                this.reminders = response;
+                this.template = {};
+                this.renderUI();
+            });
     }
 
     renderUI() {
+        console.log('rendering the UI: ');
         this.template = Handlebars.templates['reminder-list'];
         this.overviewEl.empty();
+        console.log('passing in reminders:');
+        console.log(this.reminders);
         this.overviewEl.append(this.template({reminders: this.reminders}));
         this.registerListener();
     }
@@ -224,9 +241,15 @@ class ReminderOverviewController {
         $('input[type="checkbox"]').on('click', (event) => {
             let bool = $(event.target).is(':checked');
             let id = $($(event.target)[0].attributes[0])[0].value;
-            ReminderStorageServiceClass.updateFinishStatus(bool, id);
-            this.reminders = ReminderStorageServiceClass.getReminders();
-            this.renderUI();
+            ReminderStorageServiceClass.updateFinishStatus(bool, id, this.reminders)
+                .then(() => {
+                    ReminderStorageServiceClass
+                        .getReminders()
+                        .then((response) => {
+                            this.reminders = response;
+                            this.renderUI();
+                        });
+                });
         });
 
         $('.list-container .btn-edit').on('click', (event) => {
@@ -236,8 +259,12 @@ class ReminderOverviewController {
     }
 
     filterBy() {
-        this.reminders = ReminderStorageServiceClass.getReminders();
-        this.renderUI();
+        ReminderStorageServiceClass
+            .getReminders()
+            .then((response) => {
+                this.reminders = response;
+                this.renderUI();
+            });
     }
 }
 

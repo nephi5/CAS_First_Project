@@ -3,14 +3,21 @@ import { default as ReminderStorageService } from './../reminder-storage.service
 class ReminderOverviewController {
     constructor() {
         this.overviewEl = $('.reminder-list');
-        this.reminders = ReminderStorageService.getReminders();
-        this.template = {};
-        this.renderUI();
+        ReminderStorageService
+            .getReminders()
+            .then((response) => {
+                this.reminders = response;
+                this.template = {};
+                this.renderUI();
+            });
     }
 
     renderUI() {
+        console.log('rendering the UI: ');
         this.template = Handlebars.templates['reminder-list'];
         this.overviewEl.empty();
+        console.log('passing in reminders:');
+        console.log(this.reminders);
         this.overviewEl.append(this.template({reminders: this.reminders}));
         this.registerListener();
     }
@@ -19,9 +26,15 @@ class ReminderOverviewController {
         $('input[type="checkbox"]').on('click', (event) => {
             let bool = $(event.target).is(':checked');
             let id = $($(event.target)[0].attributes[0])[0].value;
-            ReminderStorageService.updateFinishStatus(bool, id);
-            this.reminders = ReminderStorageService.getReminders();
-            this.renderUI();
+            ReminderStorageService.updateFinishStatus(bool, id, this.reminders)
+                .then(() => {
+                    ReminderStorageService
+                        .getReminders()
+                        .then((response) => {
+                            this.reminders = response;
+                            this.renderUI();
+                        });
+                });
         })
 
         $('.list-container .btn-edit').on('click', (event) => {
@@ -31,8 +44,12 @@ class ReminderOverviewController {
     }
 
     filterBy() {
-        this.reminders = ReminderStorageService.getReminders();
-        this.renderUI();
+        ReminderStorageService
+            .getReminders()
+            .then((response) => {
+                this.reminders = response;
+                this.renderUI();
+            });
     }
 }
 

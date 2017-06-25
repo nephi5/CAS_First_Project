@@ -2,6 +2,8 @@ const express = require('express');
 const bodyParser = require('body-parser');
 
 const app = express();
+
+const remindersRouter = require('./server/routes/reminders.routes');
 app.use(express.static(__dirname + '/src'));
 
 app.use(bodyParser.json());
@@ -12,15 +14,7 @@ app.use(bodyParser.json());
 //     next();
 // });
 
-// app.get("/", function(req, res){
-//     res.sendFile("/html/other2.html",  {root: __dirname + '/public/'});
-// });
-//
-// app.use("/", function(req, res){
-//     res.sendFile("/html/other2.html",  {root: __dirname + '/public/'});
-// });
-
-// app.use("/", require('./routes/indexRoutes.js'));
+app.use('/reminders', remindersRouter);
 // app.use("/orders", require('./routes/orderRoutes.js'));
 
 
