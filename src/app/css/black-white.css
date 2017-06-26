@@ -1,0 +1,32 @@
+.black-white, .black-white .main-view {
+    background-color: black;
+    color:white;
+}
+
+.black-white .container {
+    border: 1px solid white;
+}
+
+.black-white .btn {
+    background-color: black;
+    border: 1px solid white;
+}
+
+.black-white .btn:hover {
+    background-color: white;
+    color:black;
+}
+
+.black-white .top-buttons .btn.btn-primary:hover {
+    background-color: white;
+    color: black;
+}
+
+.black-white .btn.btn-active {
+    background-color: white;
+    color: black;
+}
+
+.black-white .priority-symbol.active {
+    color: white;
+}

@@ -24,6 +24,7 @@ function getAll(query, callback) {
 }
 
 function updateReminder(id, reminder, callback) {
+    reminder.dueDateByNum = new Date(reminder.dueDate).getTime();
     db.update({_id: id}, reminder, {}, function (err, numReplaced) {
         callback(err, numReplaced);
     })

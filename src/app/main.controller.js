@@ -4,18 +4,26 @@ import {default as initFPCtrl} from './reminder-overview/filter-panel.controller
 
 class MainController {
     constructor() {
-        this.registerListener();
+
         if (sessionStorage.currentView === 'overview') {
             this.renderReminderOverviewView();
         }
     }
 
     switchStyles(style) {
-        // TODO implement style change!
-        console.log(`Switching styles to: ${style}`);
+        if (style === 'blackWhiteStyle') {
+            sessionStorage.overallStyle = 'blackWhiteStyle';
+            $('body').addClass('black-white');
+        } else {
+            sessionStorage.overallStyle = 'normal';
+            $('body').removeClass('black-white');
+        }
     }
 
     registerListener() {
+        let currentVal = sessionStorage.overallStyle ? sessionStorage.overallStyle : 'normal';
+        this.switchStyles(currentVal);
+        $(".top-buttons select").val(currentVal);
         $('.top-buttons select').on('change', (event) => {
             this.switchStyles(event.target.value);
         });
@@ -26,6 +34,7 @@ class MainController {
         let template = Handlebars.templates['reminder-overview-view'];
         mainViewEl.empty();
         mainViewEl.append(template);
+        this.registerListener();
         window.ROCtrl = initROCtrl();
         window.FPCtrl = initFPCtrl();
     }
