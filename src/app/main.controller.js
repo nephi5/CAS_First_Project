@@ -4,7 +4,6 @@ import {default as initFPCtrl} from './reminder-overview/filter-panel.controller
 
 class MainController {
     constructor() {
-
         if (sessionStorage.currentView === 'overview') {
             this.renderReminderOverviewView();
         }
